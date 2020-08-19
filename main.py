@@ -12,16 +12,24 @@ GRID_RADIUS = 500
 
 def calc(angle):
 	x = math.cos(angle)
+	print(x)
 	y = math.sin(angle)
+	print(y)
 	gradient = y/x 
+	print(gradient)
 	normal = -1/gradient
+	print(normal)
 	focus = x - (y/normal)
+	print(focus)
 	return (x, y, focus)
 
 def convertToScreen(x, y, focus):
 	c_focus = (focus * GRID_RADIUS) + ORIGIN[0]
+	print(c_focus)
 	c_y = int((y * GRID_RADIUS) + ORIGIN[1])
+	print(c_y)
 	c_x = int((x * GRID_RADIUS) + ORIGIN[0])
+	print(c_x)
 	arc_radius = math.sqrt((c_y-ORIGIN[1])**2 + (c_x-c_focus)**2)
 	return (c_x, c_y, c_focus, arc_radius)
 
@@ -32,7 +40,10 @@ def drawArc(angle):
 	(c_x, c_y, c_focus, arc_radius) = convertToScreen(x, y, focus)
 
 	for j in range(2*int(ORIGIN[1])-c_y,c_y):
-		i = math.sqrt(arc_radius**2-(j-ORIGIN[1])**2)+c_focus
+		if angle > math.pi/2:
+			i = math.sqrt(arc_radius**2-(j-ORIGIN[1])**2)+c_focus
+		else:
+			i = -math.sqrt(arc_radius**2-(j-ORIGIN[1])**2)+c_focus
 		canvas.create_rectangle(i-1,j-1,i,j)
 
 def drawInitial():
@@ -46,9 +57,10 @@ def drawInitial():
 def main():
 	drawInitial()
 	
-	for x in range(17,32):
+	for x in range(1, 32):
 		if x % 16 != 0:
 			drawArc(x*math.pi/32)
+	
 	root.mainloop()
 
 if __name__=="__main__":
