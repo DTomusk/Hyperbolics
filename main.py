@@ -10,41 +10,59 @@ canvas.pack()
 ORIGIN = [canvas_width/2, canvas_height/2]
 GRID_RADIUS = 500
 
-def calc(angle):
-	x = math.cos(angle)
-	print(x)
-	y = math.sin(angle)
-	print(y)
-	gradient = y/x 
-	print(gradient)
-	normal = -1/gradient
-	print(normal)
-	focus = x - (y/normal)
-	print(focus)
-	return (x, y, focus)
-
-def convertToScreen(x, y, focus):
-	c_focus = (focus * GRID_RADIUS) + ORIGIN[0]
-	print(c_focus)
-	c_y = int((y * GRID_RADIUS) + ORIGIN[1])
-	print(c_y)
-	c_x = int((x * GRID_RADIUS) + ORIGIN[0])
-	print(c_x)
-	arc_radius = math.sqrt((c_y-ORIGIN[1])**2 + (c_x-c_focus)**2)
-	return (c_x, c_y, c_focus, arc_radius)
-
-def drawArc(angle):
-
-	(x, y, focus) = calc(angle)
-
-	(c_x, c_y, c_focus, arc_radius) = convertToScreen(x, y, focus)
-
-	for j in range(2*int(ORIGIN[1])-c_y,c_y):
-		if angle > math.pi/2:
-			i = math.sqrt(arc_radius**2-(j-ORIGIN[1])**2)+c_focus
+# you only need to points on a circle to draw an arc 
+def drawArc(first, second):
+	# if points are opposite draw a line not an arc 
+	if int(distance(first, second)) == int(2 * GRID_RADIUS):
+		canvas.create_line(first[0], first[1], second[0], second[1])
+	else:
+		my_focus = focus(first, second)
+		radius = distance(first, my_focus)
+		# choose what to iterate over 
+		if abs(first[0]-second[0]) > abs(first[1]-second[1]):
+			for i in range(first[0], second[0]):
+				j = math.sqrt(radius**2-(i-my_focus[0])**2)+my_focus[1]
+				canvas.create_rectangle(i-1,j-1,i,j)
 		else:
-			i = -math.sqrt(arc_radius**2-(j-ORIGIN[1])**2)+c_focus
-		canvas.create_rectangle(i-1,j-1,i,j)
+			for j in range(first[1], second[1]):
+				print("j: " + str(j))
+				print("radius: " + str(radius))
+				i = math.sqrt(radius**2-(j-my_focus[1])**2)+my_focus[0]
+				canvas.create_rectangle(i-1,j-1,i,j)
+
+def focus(first, second):
+	# get two lines which are normal to radii 
+	# need to check for division with 0
+	# normals are the gradients of the lines created by the given points and the origin
+	normal_one = gradient(ORIGIN, first)
+	print("First radial: " + str(normal_one))
+	normal_two = gradient(ORIGIN, second)
+	print("Second radial: " + str(normal_two))
+	# the gradients are of the lines tangent to the circle at the points 
+	gradient_one = -1/normal_one
+	print("First tangent gradient: " + str(gradient_one))
+	gradient_two = -1/normal_two
+	print("Second tangent gradient: " + str(gradient_two))
+	# I checked that this should work 
+	# find the coordinates of the focus of the circle 
+	x = (first[1]-(gradient_one*first[0])+(gradient_two*second[0])-second[1])/(gradient_two-gradient_one)
+	print("Focus x coordinate: " + str(x))
+	y = (gradient_one*(x-first[0]))+first[1]
+	print("Focus y coordinate: " + str(y))
+	return (x,y)
+
+def distance(first, second):
+	return math.sqrt((first[0]-second[0])**2+(first[1]-second[1])**2)
+
+def gradient(first, second):
+	# need to test if these approximations are valid 
+	if first[0]-second[0] == 0:
+		gradient = (first[1]-second[1])/0.0001
+	else:
+		gradient = (first[1]-second[1])/(first[0]-second[0])
+	if gradient == 0:
+		gradient = 0.00001
+	return gradient
 
 def drawInitial():
 	x = ORIGIN[0]
@@ -56,10 +74,8 @@ def drawInitial():
 
 def main():
 	drawInitial()
-	
-	for x in range(1, 32):
-		if x % 16 != 0:
-			drawArc(x*math.pi/32)
+
+	drawArc((800,100),(300,600))
 	
 	root.mainloop()
 
