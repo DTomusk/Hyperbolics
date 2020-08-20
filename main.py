@@ -23,29 +23,11 @@ def drawArc(first, second):
 		canvas.create_line(my_focus[0], my_focus[1], second[0], second[1])
 		radius = distance(first, my_focus)
 		# choose what to iterate over 
-		if abs(first[0]-second[0]) > abs(first[1]-second[1]):
-			for i in range(int(first[0]), int(second[0])):
-				j1 = math.sqrt(radius**2-(i-my_focus[0])**2)+my_focus[1]
-				j2 = -math.sqrt(radius**2-(i-my_focus[0])**2)+my_focus[1]
-				#if abs(j1 - ORIGIN[1]) < abs(j2 - ORIGIN[1]):
-				#	j = j1 
-				#else:
-				#	j = j2
-				canvas.create_rectangle(i-1,j1-1,i,j1)
-				canvas.create_rectangle(i-1,j2-1,i,j2)
-		else:
-			for j in range(int(first[1]), int(second[1])):
-				print("j: " + str(j))
-				print("radius: " + str(radius))
-				i1 = math.sqrt(radius**2-(j-my_focus[1])**2)+my_focus[0]
-				i2 = -math.sqrt(radius**2-(j-my_focus[1])**2)+my_focus[0]
-				#if abs(i1 - ORIGIN[0]) < abs(i2 - ORIGIN[0]):
-				#	i = i1 
-				#else:
-				#	i = i2
-				canvas.create_rectangle(i1-1,j-1,i1,j)
-				canvas.create_rectangle(i2-1,j-1,i2,j)
-
+		for i in range(256):
+			x = my_focus[0] + radius * math.cos(i * math.pi / 128)
+			y = my_focus[1] + radius * math.sin(i * math.pi / 128)
+			canvas.create_rectangle(x-1, y-1, x, y)
+		
 def drawInitial():
 	x = ORIGIN[0]
 	y = ORIGIN[1]
