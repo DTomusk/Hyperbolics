@@ -12,9 +12,9 @@ ORIGIN = [canvas_width/2, canvas_height/2]
 GRID_RADIUS = 300
 
 # you only need to points on a circle to draw an arc 
-def drawArc(first, second):
+def drawArc(first, second, line):
 	# if points are opposite draw a line not an arc 
-	if int(distance(first, second)) == int(2 * GRID_RADIUS):
+	if (int(distance(first, second)) == int(2 * GRID_RADIUS)) | line:
 		canvas.create_line(first[0], first[1], second[0], second[1])
 	else:
 		my_focus = focus(first, second)
@@ -22,11 +22,13 @@ def drawArc(first, second):
 		canvas.create_line(my_focus[0], my_focus[1], first[0], first[1])
 		canvas.create_line(my_focus[0], my_focus[1], second[0], second[1])
 		radius = distance(first, my_focus)
-		# choose what to iterate over 
-		for i in range(256):
-			x = my_focus[0] + radius * math.cos(i * math.pi / 128)
-			y = my_focus[1] + radius * math.sin(i * math.pi / 128)
-			canvas.create_rectangle(x-1, y-1, x, y)
+		# at some point need to choose the right angles 
+		for i in range(1024):
+			x = my_focus[0] + radius * math.cos(i * math.pi / 512)
+			y = my_focus[1] + radius * math.sin(i * math.pi / 512)
+			# inefficient solution
+			if distance((x,y), ORIGIN) < GRID_RADIUS:
+				canvas.create_rectangle(x-1, y-1, x, y)
 		
 def drawInitial():
 	x = ORIGIN[0]
@@ -73,6 +75,49 @@ def gradient(first, second):
 def getPointOnCircle(angle):
 	return (GRID_RADIUS*math.cos(angle)+ORIGIN[0], GRID_RADIUS*math.sin(angle)+ORIGIN[1])
 
+# this function is more in terms of vectors 
+def alpha(point, param):
+	x = point[0]
+	y = point[1]
+
+	canvas.create_rectangle(x-2, y-2, x+2, y+2)
+
+	print("Point: " + str(x) + " " + str(y))
+
+	a = [param * (x - ORIGIN[0]), param * (y - ORIGIN[1])]
+	b = [param * (ORIGIN[1] - y), param * (x - ORIGIN[0])]
+
+	canvas.create_line(ORIGIN[0], ORIGIN[1], ORIGIN[0] + a[0], ORIGIN[1] + a[1])
+	
+	modA = math.sqrt(a[0]**2 + a[1]**2)
+
+	lam = math.sqrt((GRID_RADIUS**2 / modA**2) - 1)
+	b[0] *= lam
+	b[1] *= lam
+
+	modB = math.sqrt(b[0]**2 + b[1]**2)
+
+	alpha_x = ORIGIN[0] + a[0] + b[0]
+	alpha_y = ORIGIN[1] + a[1] + b[1]
+
+	beta_x = ORIGIN[0] + a[0] - b[0]
+	beta_y = ORIGIN[1] + a[1] - b[1]
+
+	canvas.create_line(alpha_x, alpha_y, beta_x, beta_y)
+	canvas.create_line(ORIGIN[0], ORIGIN[1], alpha_x, alpha_y)
+	canvas.create_line(ORIGIN[0], ORIGIN[1], beta_x, beta_y)
+
+	mu = (GRID_RADIUS * modB) / modA**2
+
+	gamma_x = ORIGIN[0] + mu * a[0]
+	gamma_y = ORIGIN[1] + mu * a[1]
+
+	canvas.create_line(ORIGIN[0], ORIGIN[1], gamma_x, gamma_y)
+	canvas.create_line(alpha_x, alpha_y, gamma_x, gamma_y)
+	canvas.create_line(beta_x, beta_y, gamma_x, gamma_y)
+
+	# we need the choice of parameter to be such that mod gamma-alpha == mod gamma
+
 def main():
 	drawInitial()
 
@@ -87,31 +132,34 @@ def main():
 	#	print("Point 1: " + str(point1[0]) + ", " + str(point1[1]))
 	#	point2 = getPointOnCircle(angle2)
 	#	print("Point 2: " + str(point2[0]) + ", " + str(point2[1]))
-	#	drawArc(point1, point2)
+	#	drawArc(point1, point2, False)
 
-	angle1 = 13*math.pi/8
-	angle2 = 7*math.pi/8
-	point1 = getPointOnCircle(angle1)
-	point2 = getPointOnCircle(angle2)
-	drawArc(point1, point2)
+	#angle1 = 13*math.pi/8
+	#angle2 = 7*math.pi/8
+	#point1 = getPointOnCircle(angle1)
+	#point2 = getPointOnCircle(angle2)
+	#drawArc(point1, point2, False)
 
-	angle1 = 3*math.pi/8
-	angle2 = 9*math.pi/8
-	point1 = getPointOnCircle(angle1)
-	point2 = getPointOnCircle(angle2)
-	drawArc(point1, point2)
+	#angle1 = 3*math.pi/8
+	#angle2 = 9*math.pi/8
+	#point1 = getPointOnCircle(angle1)
+	#point2 = getPointOnCircle(angle2)
+	#drawArc(point1, point2, False)
 
-	angle1 = 11*math.pi/8
-	angle2 = 1*math.pi/8
-	point1 = getPointOnCircle(angle1)
-	point2 = getPointOnCircle(angle2)
-	drawArc(point1, point2)
+	#angle1 = 11*math.pi/8
+	#angle2 = 1*math.pi/8
+	#point1 = getPointOnCircle(angle1)
+	#point2 = getPointOnCircle(angle2)
+	#drawArc(point1, point2, False)
 
-	angle1 = 15*math.pi/8
-	angle2 = 5*math.pi/8
-	point1 = getPointOnCircle(angle1)
-	point2 = getPointOnCircle(angle2)
-	drawArc(point1, point2)
+	#angle1 = 15*math.pi/8
+	#angle2 = 5*math.pi/8
+	#point1 = getPointOnCircle(angle1)
+	#point2 = getPointOnCircle(angle2)
+	#drawArc(point1, point2, False)
+
+	alpha((ORIGIN[0]+50, ORIGIN[1]+50), 1.8)
+	alpha((ORIGIN[0]-20, ORIGIN[1]-70), 1.5)
 	
 	root.mainloop()
 
